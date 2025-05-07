@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant Browser
+    participant Server
+
+    Note right of Browser: User clicks 'Save'
+    Note right of Browser: Note is appended to local 'notes' variable
+    Note right of Browser: redrawNotes() in spa.js renders the list using the 'notes' variable
+
+    Browser->>Server: POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+    activate Server
+
+    NOTE left of Server: Note is appended to data.json
+    NOTE left of Server: Note will now show up on page refresh too
+
+    Server-->>Browser: {message: "note created"}
+    deactivate Server
