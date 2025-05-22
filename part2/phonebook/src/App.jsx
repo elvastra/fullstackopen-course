@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import PersonForm from './components/PersonForm.jsx'
 import PhonebookFilter from './components/PhonebookFilter.jsx'
 import PhonebookNumbers from './components/PhonebookNumbers.jsx'
+import PhonebookNotification from './components/PhonebookNotification.jsx'
 import PhonebookService from './services/PhonebookService.js'
 
 const App = () => {
@@ -9,6 +10,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [nameFilter, setNameFilter] = useState('')
+  const [success, setSuccess] = useState(null)
+  const [failure, setFailure] = useState(null)
 
   // Fetch data from server
   useEffect(() => {
@@ -17,6 +20,16 @@ const App = () => {
       .then(all => setPersons(all))
   }, [])
 
+  const notifySuccess = (message) => {
+    setSuccess(message)
+    setTimeout(() => setSuccess(null), 5000)
+  }
+
+  const notifyFailure = (message) => {
+    setFailure(message)
+    setTimeout(() => setFailure(null), 5000)
+  }
+
   const changePerson = (id, obj) => {
     return PhonebookService.update(id, obj)
       .then(updated => {
@@ -24,6 +37,7 @@ const App = () => {
 	  person.id === updated.id ? updated : person))
 	setNewName('')
 	setNewNumber('')
+	notifySuccess(`Changed number of ${updated.name}`)
       })
   }
 
@@ -33,6 +47,7 @@ const App = () => {
 	setPersons(persons.concat(added))
 	setNewName('')
 	setNewNumber('')
+	notifySuccess(`Added ${added.name}`)
       })
   }
 
@@ -40,8 +55,11 @@ const App = () => {
     const current = persons.find((person) => person.id === id)
     if (window.confirm(`Delete ${current.name}?`)) {
       PhonebookService.remove(id)
-	.then(removed =>
-	  setPersons(persons.filter((person) => person.id !== removed.id)))
+	.then(removed => {
+	  setPersons(persons.filter((person) => person.id !== removed.id))
+	  notifySuccess(`${current.name} deleted`)
+	})
+	.catch(error => notifyFailure(`${current.name} was already deleted from server`))
     }
   }
 
@@ -63,6 +81,9 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
+
+      <PhonebookNotification.Success message={success}/>
+      <PhonebookNotification.Failure message={failure}/>
 
       <PhonebookFilter
 	phonebookFilter={nameFilter}
