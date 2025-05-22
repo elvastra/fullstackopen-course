@@ -1,45 +1,62 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import Countries from './components/Countries.jsx'
+import CountryList from './components/CountryList.jsx'
+import CountryOverview from './components/CountryOverview.jsx'
+import WeatherOverview from './components/WeatherOverview.jsx'
 
+// NOTE env variables have to start with VITE_
 const API_KEY = import.meta.env.VITE_WEATHER_KEY
 
 const App = () => {
-  const [query, setQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [countries, setCountries] = useState([])
-  const [expandedCountries, setExpandedCountries] = useState([])
+  const [city, setCity] = useState('')
+  const [weatherData, setWeatherData] = useState(null)
 
   // Get countries
   useEffect(() => {
+    const countriesUrl = 'https://studies.cs.helsinki.fi/restcountries/api/all'
     axios
-      .get("https://studies.cs.helsinki.fi/restcountries/api/all")
+      .get(countriesUrl)
       .then(res => setCountries(res.data))
   }, [])
 
-  const handleQuery = (event) => {
-    setQuery(event.target.value)
-    setExpandedCountries([])
-  }
+  // Get weather
+  useEffect(() => {
+    if (city) {
+      const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+      axios
+	.get(weatherUrl)
+	.then(res => setWeatherData(res.data))
+    }
+  }, [city])
 
-  const toggleCountryExpansion = (key) => {
-    const copy = [...expandedCountries]
-    const match = copy.find(code => code === key)
-    if (match) return setExpandedCountries(copy.filter(code => code !== key))
-    copy.push(key)
-    setExpandedCountries(copy)
+  const handleSearch = (event) => setSearchQuery(event.target.value)
+
+  const searchMatches = countries.filter(country =>
+    country.name.common.toLowerCase().includes(searchQuery.toLowerCase()))
+
+  const singleMatch = searchMatches.length === 1
+
+  if (singleMatch) {
+    // Sometimes there are a few capitals
+    const mainCapital = searchMatches[0].capital[0]
+    if (city !== mainCapital) setCity(mainCapital)
   }
 
   return (
     <div>
-      <div>Find countries: <input value={query}
-				  onChange={handleQuery}/></div>
+      <div>Find countries: <input value={searchQuery}
+				  onChange={handleSearch}/></div>
 
-      <Countries countries={countries}
-		 expandedCountries={expandedCountries}
-		 query={query} onClick={toggleCountryExpansion}/>
+      {singleMatch ? (
+	<div>
+	  <CountryOverview country={searchMatches[0]} weatherData={weatherData} />
+	  <WeatherOverview weatherData={weatherData} />
+	</div>
+      ) : (<CountryList countries={searchMatches} setSearchQuery={setSearchQuery}/>)}
 
-      </div>
-
+    </div>
   )
 }
 
