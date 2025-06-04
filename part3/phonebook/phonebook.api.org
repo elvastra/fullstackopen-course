@@ -1,7 +1,7 @@
 #+title: phonebook api
 * API :verb:
-# template https://fullstackopen-course-7rr6.onrender.com
-template http://localhost:3001
+template https://fullstackopen-course-7rr6.onrender.com
+# template http://localhost:3001
 Accept: application/json
 
 ** Get persons 

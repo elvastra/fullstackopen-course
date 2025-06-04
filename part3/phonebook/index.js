@@ -3,7 +3,6 @@ const morgan = require('morgan')
 const app = express()
 const PORT = process.env.PORT || 3001
 
-
 // Use the frontend
 app.use(express.static('dist'))
 
