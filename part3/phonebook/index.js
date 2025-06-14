@@ -82,17 +82,17 @@ app.delete('/api/persons/:id', (request, response, next) => {
 app.post('/api/persons', (request, response, next) => {
 	const body = request.body
 
-	if (!body)
-		return response.status(400).json({
-			error: 'No body',
-		})
+	// if (!body)
+	// 	return response.status(400).json({
+	// 		error: 'No body',
+	// 	})
 
-	const missing = !body.name || !body.number
+	// const missing = !body.name || !body.number
 
-	if (missing)
-		return response.status(400).json({
-			error: 'Body is missing a name and/or number',
-		})
+	// if (missing)
+	// 	return response.status(400).json({
+	// 		error: 'Body is missing a name and/or number',
+	// 	})
 
 	Person.find({ name: body.name })
 		.then((matchingPeople) => {
@@ -125,6 +125,8 @@ const errorHandler = (error, request, response, next) => {
 
 	if (error.name === 'CastError')
 		return response.status(400).send({ error: 'Malformed ID' })
+	if (error.name === 'ValidationError')
+		return response.status(400).json({ error: error.message })
 
 	next(error)
 }

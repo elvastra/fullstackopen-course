@@ -40,12 +40,14 @@ const App = () => {
 	}
 
 	const addPerson = (obj) => {
-		return PhonebookService.create(obj).then((added) => {
-			setPersons(persons.concat(added))
-			setNewName('')
-			setNewNumber('')
-			notifySuccess(`Added ${added.name}`)
-		})
+		return PhonebookService.create(obj)
+													 .then((added) => {
+														 setPersons(persons.concat(added))
+														 setNewName('')
+														 setNewNumber('')
+														 notifySuccess(`Added ${added.name}`)
+													 })
+													 .catch((error) => notifyFailure(error.response.data.error))
 	}
 
 	const removePerson = (id) => {
